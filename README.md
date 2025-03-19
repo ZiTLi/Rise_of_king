@@ -1,6 +1,8 @@
+### Важно !!!!!
+## название окна в скрипте поменять на свое сейчас стоит Rise of Kingdoms - BlueStacks App Player 3" 
+
 
 ## Запуск бота видео
-
 ### [Quick tutorial for starting programmers](https://youtu.be/xBQC3M0O-B8)
 
 ### Prerequisites
