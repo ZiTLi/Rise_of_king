@@ -41,62 +41,6 @@ class ActionSets:
         machine.set_initial_state("1")  # Добавьте эту строку 
         return machine
     
-
-    def scout_karta2(self):
-        machine = self.create_machine()
-
-        def check_timeout(start_time, timeout):
-            return time.time() - start_time > timeout
-
-        def safe_find_and_click(self, image_path, delay, offset_y=0, timeout=10):
-            start_time = time.time()
-            while not self.check_timeout(start_time, timeout):
-                action = FindAndClickImageAction(image_path, delay=delay, offset_y=offset_y)
-                if action.execute(self.OS_ROKBOT):
-                    return True
-                time.sleep(1)
-            return False
-
-        def safe_find_image(self, image_path, delay, timeout=10):
-         start_time = time.time()
-         while not self.check_timeout(start_time, timeout):
-             action = FindImageAction(image_path, delay=delay)
-             if action.execute(self.OS_ROKBOT):
-                  return True
-             time.sleep(1)
-         return False
-
-        def safe_press_key(self, key, timeout=5):
-         start_time = time.time()
-         while not self.check_timeout(start_time, timeout):
-              action = PressKeyAction(key)
-              if action.execute(self.OS_ROKBOT):
-                  return True
-              time.sleep(0.5)
-         return False
-
-        def restart_state(machine):
-            if safe_press_key('escape'):
-                logging.info("Клавиша 'escape' успешно нажата. Перезапуск конечного автомата.")
-                return "1"
-            else:
-                logging.warning("Не удалось нажать клавишу 'escape'. Переход в состояние 'restart'.")
-                return "restart"
-
-        machine.add_state("1", lambda: "2" if safe_find_and_click('Media/explorenight.png', .4, offset_y=60) else "4q", "2", "4q")
-        machine.add_state("2", lambda: "3" if safe_find_and_click('Media/exploreicon.png', .3) else restart_state(machine), "3", "restart")
-        machine.add_state("3", lambda: "5" if safe_find_and_click('Media/exploreaction.png', 3) else "4", "5", "4")
-        machine.add_state("4", lambda: "5" if safe_find_and_click('Media/exploreaction3.png', 3) else "4q", "5", "4q")
-        machine.add_state("4q", lambda: "4w" if safe_find_image('Media/exploreaction4.png', 3) else "1", "4w", "1")
-        machine.add_state("4w", lambda: "5" if safe_find_and_click('Media/exploreaction5.png', 3) else "3", "5", "3")
-        machine.add_state("5", lambda: "6" if safe_find_and_click('Media/exploreaction2.png', 3) else "4", "6", "4")
-        machine.add_state("6", lambda: "7" if safe_find_and_click('Media/sendaction.png', 1) else "5", "7", "5")
-        machine.add_state("restart", lambda: "1" if safe_press_key('escape') else "restart", "1", "restart")
-        machine.add_state("7", lambda: "1" if safe_find_and_click('Media/explorehome.png', 1) else "1", "1", "1")
-
-        machine.set_initial_state("1")
-        return machine
-
     def farm_varvars (self):
         machine = self.create_machine()
         machine.add_state("1", FindAndClickImageAction('Media/ficon.png',delay=1.5), "2", "restart")
