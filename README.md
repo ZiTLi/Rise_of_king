@@ -3,10 +3,10 @@
 ## "Rise of Kingdoms - BlueStacks App Player 3" 
 Находим в проекте все значения Rise of Kingdoms - BlueStacks App Player 3 и меняем на свое 
 
-## Язык игры на руском !
+### Язык игры на руском !
 
 ## Запуск бота видео
-### [Quick tutorial for starting programmers](https://youtu.be/xBQC3M0O-B8)
+## [Quick tutorial for starting programmers](https://youtu.be/xBQC3M0O-B8)
 
 ### Prerequisites
 
