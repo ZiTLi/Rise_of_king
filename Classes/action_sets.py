@@ -15,8 +15,7 @@ from Actions.wait_for_keypress_action import WaitForKeyPressAction
 from state_machine import StateMachine
 from Actions.find_gems_action import FindGemAction
 from helpers import Helpers
-import time
-import logging
+
 
 class ActionSets:
     def __init__(self, OS_ROKBOT):
@@ -27,18 +26,27 @@ class ActionSets:
     
     def scout_karta(self):
         machine = self.create_machine()
+        machine.add_state("1q", FindImageAction('Media/explorehome.png', delay=1), "1w","1")
+        machine.add_state("1w", FindAndClickImageAction('Media/explorehome.png', delay=3), "1", "restart")
+
         machine.add_state("1", FindAndClickImageAction('Media/explorenight.png', delay=.4, offset_y=60), "2", "4q")
         machine.add_state("2", FindAndClickImageAction('Media/exploreicon.png', delay=.3), "3", "restart")
         machine.add_state("3", FindAndClickImageAction('Media/exploreaction.png', delay=3), "5", "4")
         machine.add_state("4", FindAndClickImageAction('Media/exploreaction3.png', delay=3), "5", "4q")
-        machine.add_state("4q", FindImageAction('Media/exploreaction4.png', delay=3), "4w", "1")
-        machine.add_state("4w", FindAndClickImageAction('Media/exploreaction5.png', delay=3), "5", "3")
-
         machine.add_state("5", FindAndClickImageAction('Media/exploreaction2.png', delay=3), "6", "4")
         machine.add_state("6", FindAndClickImageAction('Media/sendaction.png', delay=1), "7", "5")
-        machine.add_state("restart", PressKeyAction('escape'), "1")
-        machine.add_state("7", FindAndClickImageAction('Media/explorehome.png', delay=1), "1", "1")
-        machine.set_initial_state("1") 
+
+
+        machine.add_state("4q", FindImageAction('Media/exploreaction4.png', delay=3), "4w", "4w")
+        machine.add_state("4w", FindAndClickImageAction('Media/exploreaction5.png', delay=3), "2", "restart")
+
+        machine.add_state("restart", FindAndClickImageAction('Media/explorehome.png', delay=3), "1q", "restart1")
+        machine.add_state("restart1", FindImageAction('Media/explorehome2.png', delay=3), "1q", "restart2")
+        machine.add_state("restart2", PressKeyAction('escape',delay=2), "restart3")
+        machine.add_state("restart3", FindAndClickImageAction('Media/otmena.png',delay=2), "1q", "1q")
+
+        machine.add_state("7", FindAndClickImageAction('Media/explorehome.png', delay=1), "1q", "restart")
+        machine.set_initial_state("1q") 
         return machine
     
     def farm_varvars (self):
