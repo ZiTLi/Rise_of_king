@@ -1,6 +1,9 @@
-### Важно !!!!!
-## название окна в скрипте поменять на свое сейчас стоит Rise of Kingdoms - BlueStacks App Player 3" 
+## Важно !!!!!
+## название окна в скрипте поменять на свое сейчас стоит 
+## "Rise of Kingdoms - BlueStacks App Player 3" 
+Находим в проекте все значения Rise of Kingdoms - BlueStacks App Player 3 и меняем на свое 
 
+## Язык игры на руском !
 
 ## Запуск бота видео
 ### [Quick tutorial for starting programmers](https://youtu.be/xBQC3M0O-B8)
