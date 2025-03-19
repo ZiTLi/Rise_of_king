@@ -24,4 +24,7 @@ EMAIL=your_email
 ANTIALIAS_METHOD=LANCZOS
 ```
 
+
+### Запуск через #Visual Studio Code 
+
 Основной код OSROKBOT открытая лицензия [MIT License](LICENSE).

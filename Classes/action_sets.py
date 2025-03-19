@@ -38,7 +38,7 @@ class ActionSets:
         machine.add_state("6", FindAndClickImageAction('Media/sendaction.png', delay=1), "7", "5")
         machine.add_state("restart", PressKeyAction('escape'), "1")
         machine.add_state("7", FindAndClickImageAction('Media/explorehome.png', delay=1), "1", "1")
-        machine.set_initial_state("1")  # Добавьте эту строку 
+        machine.set_initial_state("1") 
         return machine
     
     def farm_varvars (self):
@@ -52,8 +52,7 @@ class ActionSets:
         machine.add_state("7", FindAndClickImageAction('Media/marchaction.png',delay=1.5), "10", "restart")
         machine.add_state("8", FindImageAction('Media/victory2.png', delay=1), "10","8")
         machine.add_state("9", FindImageAction('Media/victoryreturn.png', delay=1), "10","9")
-     #   machine.add_state("9", FindImageAction('Media/victoryreturn.png', delay=1), "10","9")
-        machine.add_state("10", ManualSleepAction(delay=40), "1", "restart") # Ожидание 1 минуту
+        machine.add_state("10", ManualSleepAction(delay=60), "1", "restart") # Ожидание 1 минуту
         machine.add_state("restart", PressKeyAction('escape'), "1")
         machine.set_initial_state("1")
         return machine
