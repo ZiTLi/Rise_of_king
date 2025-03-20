@@ -169,16 +169,16 @@ class UI(QtWidgets.QWidget):
         self.action_set_combo_box.addItems(self.action_set_names)
 
         # Checkbutton for captcha
-        self.check_captcha_checkbutton = QtWidgets.QCheckBox("captcha")
-        self.check_captcha_checkbutton.setStyleSheet("""
-            font-size: 11px;
-            background-color: #3a3a3a; 
-            color: #fff;             
-            border: 2px solid #4a90e2;  
-            border-radius: 8px;
-            padding: 2px;
-        """)
-        self.check_captcha_checkbutton.setChecked(True)
+        #self.check_captcha_checkbutton = QtWidgets.QCheckBox("captcha")
+        #self.check_captcha_checkbutton.setStyleSheet("""
+        #    font-size: 11px;
+        #    background-color: #3a3a3a; 
+        #    color: #fff;             
+        #    border: 2px solid #4a90e2;  
+        #    border-radius: 8px;
+        #    padding: 2px;
+        #""")
+        #self.check_captcha_checkbutton.setChecked(True)
 
         
 
@@ -245,7 +245,7 @@ class UI(QtWidgets.QWidget):
         button_layout.setSpacing(2)
         content_layout.addLayout(button_layout)
         content_layout.addWidget(self.action_set_combo_box)
-        content_layout.addWidget(self.check_captcha_checkbutton)
+        #content_layout.addWidget(self.check_captcha_checkbutton)
         content_layout.addLayout(debug_layout) # Add it to the layout
 
         # Main Layout
@@ -353,8 +353,8 @@ class UI(QtWidgets.QWidget):
             if selected_index != -1:
                 action_group = getattr(self.action_sets, self.action_set_names[selected_index])()
                 actions_groups = [action_group]
-                if self.check_captcha_checkbutton.isChecked():
-                    actions_groups.append(self.action_sets.email_captcha())
+                #if self.check_captcha_checkbutton.isChecked():
+                #    actions_groups.append(self.action_sets.email_captcha())
                 self.OS_ROKBOT.start(actions_groups)
                 self.status_label.setText(' Running')
                 self.status_label.setStyleSheet("color: green;font-weight: bold;")
