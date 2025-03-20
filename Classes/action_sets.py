@@ -76,7 +76,7 @@ class ActionSets:
     
     def testPNG (self):
         machine = self.create_machine()
-        machine.add_state("1", FindImageAction('Media/alliancehelp.png', delay=1), "1", "restart")
+        machine.add_state("1", FindImageAction('Media/pickuptroopscured.png', delay=1), "2", "restart")
         machine.add_state("2", FindAndClickImageAction('Media/pickuptroopscured.png',delay=1.5), "1", "restart")
         machine.add_state("restart", ManualSleepAction(delay=1), "1", "restart")
         machine.set_initial_state("1")
