@@ -16,6 +16,7 @@ from state_machine import StateMachine
 from Actions.find_gems_action import FindGemAction
 from helpers import Helpers
 import random
+import inspect
 
 class ActionSets:
     def __init__(self, OS_ROKBOT):
@@ -24,19 +25,31 @@ class ActionSets:
     def create_machine(self):
         return StateMachine()
     
-import random
+    def run_random(self):
+        scripts = [
+            method
+            for method_name, method in inspect.getmembers(self, predicate=inspect.ismethod)
+            if method.__self__ == self
+            and not method_name.startswith('_')
+            and method_name not in ('__init__', 'create_machine', 'run_random_scripts')  # Исключаем ненужные методы
+        ]
 
-class ActionSets:
-    
-    def testPNG (self):
+        while True:
+            script = random.choice(scripts)
+            num_runs = random.randint(2, 5)
+            for _ in range(num_runs):
+                machine = script()
+                while machine.current_state:
+                    machine.run()
+
+    def TEST (self):
         machine = self.create_machine()
         machine.add_state("1", FindImageAction('Media/pickuptroopscured.png', delay=1), "2", "restart")
         machine.add_state("2", FindAndClickImageAction('Media/pickuptroopscured.png',delay=1.5), "1", "restart")
         machine.add_state("restart", ManualSleepAction(delay=1), "1", "restart")
         machine.set_initial_state("1")
         return machine
-    
-        import random
+
 
     def scout_karta(self):
         machine = self.create_machine()
