@@ -15,7 +15,7 @@ from Actions.wait_for_keypress_action import WaitForKeyPressAction
 from state_machine import StateMachine
 from Actions.find_gems_action import FindGemAction
 from helpers import Helpers
-
+import random
 
 class ActionSets:
     def __init__(self, OS_ROKBOT):
@@ -24,55 +24,9 @@ class ActionSets:
     def create_machine(self):
         return StateMachine()
     
-    def scout_karta(self):
-        machine = self.create_machine()
-        machine.add_state("1q", FindImageAction('Media/explorehome.png', delay=1), "1w","1")
-        machine.add_state("1w", FindAndClickImageAction('Media/explorehome.png', delay=3), "1", "restart")
+import random
 
-        machine.add_state("1", FindAndClickImageAction('Media/explorenight.png', delay=.4, offset_y=60), "2", "4q")
-        machine.add_state("2", FindAndClickImageAction('Media/exploreicon.png', delay=.3), "3", "restart")
-        machine.add_state("3", FindAndClickImageAction('Media/exploreaction.png', delay=3), "5", "4")
-        machine.add_state("4", FindAndClickImageAction('Media/exploreaction3.png', delay=3), "5", "4q")
-        machine.add_state("5", FindAndClickImageAction('Media/exploreaction2.png', delay=3), "6", "4")
-        machine.add_state("6", FindAndClickImageAction('Media/sendaction.png', delay=1), "7", "5")
-
-
-        machine.add_state("4q", FindImageAction('Media/exploreaction4.png', delay=3), "4w", "4w")
-        machine.add_state("4w", FindAndClickImageAction('Media/exploreaction5.png', delay=3), "2", "restart")
-
-        machine.add_state("restart", FindAndClickImageAction('Media/explorehome.png', delay=3), "1q", "restart1")
-        machine.add_state("restart1", FindImageAction('Media/explorehome2.png', delay=3), "1q", "restart2")
-        machine.add_state("restart2", PressKeyAction('escape',delay=2), "restart3")
-        machine.add_state("restart3", FindAndClickImageAction('Media/otmena.png',delay=2), "1q", "1q")
-
-        machine.add_state("7", FindAndClickImageAction('Media/explorehome.png', delay=1), "1q", "restart")
-        machine.set_initial_state("1q") 
-        return machine
-    
-    def _farm_varvars (self):
-        machine = self.create_machine()
-        machine.add_state("1q", FindImageAction('Media/explorehome.png', delay=1), "1","1w")
-        machine.add_state("1w", FindImageAction('Media/explorehome2.png', delay=1), "1e","restart")
-        machine.add_state("1e", FindAndClickImageAction('Media/explorehome2.png', delay=3), "1", "restart")
-
-        machine.add_state("1", FindAndClickImageAction('Media/ficon.png',delay=1.5), "2", "restart")
-        machine.add_state("2", FindAndClickImageAction('Media/barbland.png',delay=1.5), "3", "restart")
-        machine.add_state("3", FindAndClickImageAction('Media/searchaction.png',delay=1.5), "4", "restart")
-        machine.add_state("4", FindAndClickImageAction('Media/arrow.png',delay=1.5, offset_y=105), "5","restart")
-        machine.add_state("5", FindAndClickImageAction('Media/attackaction.png',delay=.3), "6", "restart")
-        machine.add_state("6", FindAndClickImageAction('Media/newtroopaction.png',delay=1.5), "7", "restart")
-        machine.add_state("7", FindAndClickImageAction('Media/marchaction.png',delay=1.5), "10", "restart")
-        #machine.add_state("8", FindImageAction('Media/victory2.png', delay=1), "10","8")
-        #machine.add_state("9", FindImageAction('Media/victoryreturn.png', delay=1), "10","9")
-        machine.add_state("10", ManualSleepAction(delay=60), "1q", "restart") # Ожидание 1 минуту
-
-        machine.add_state("restart", FindAndClickImageAction('Media/explorehome.png', delay=3), "1q", "restart1")
-        machine.add_state("restart1", FindImageAction('Media/explorehome2.png', delay=3), "1q", "restart2")
-        machine.add_state("restart2", PressKeyAction('escape',delay=2), "restart3")
-        machine.add_state("restart3", FindAndClickImageAction('Media/otmena.png',delay=2), "1q", "1q")
-
-        machine.set_initial_state("1q")
-        return machine
+class ActionSets:
     
     def testPNG (self):
         machine = self.create_machine()
@@ -82,42 +36,66 @@ class ActionSets:
         machine.set_initial_state("1")
         return machine
     
-    def farm_varvar_heal (self):
+        import random
+
+    def scout_karta(self):
         machine = self.create_machine()
-        machine.add_state("1q", FindImageAction('Media/explorehome.png', delay=1), "1","1w")
-        machine.add_state("1w", FindImageAction('Media/explorehome2.png', delay=1), "1e","restart")
-        machine.add_state("1e", FindAndClickImageAction('Media/pickuptroopscured.png',delay=2), "1", "1r")
-        machine.add_state("1r", FindAndClickImageAction('Media/curetroops.png',delay=2), "1e", "1r")
-        machine.add_state("1r", FindAndClickImageAction('Media/explorehome2.png', delay=2), "1", "restart")
+        machine.add_state("1q", FindImageAction('Media/explorehome.png', delay=random.uniform(1, 2)), "1w", "1")
+        machine.add_state("1w", FindAndClickImageAction('Media/explorehome.png', delay=random.uniform(2, 5)), "1", "restart")
 
-        machine.add_state("1", FindAndClickImageAction('Media/ficon.png',delay=2), "2", "restart")
-        machine.add_state("2", FindAndClickImageAction('Media/barbland.png',delay=2), "3", "restart")
-        machine.add_state("3", FindAndClickImageAction('Media/searchaction.png',delay=2), "4", "restart")
-        machine.add_state("4", FindAndClickImageAction('Media/arrow.png',delay=2, offset_y=105), "5","restart")
-        machine.add_state("5", FindAndClickImageAction('Media/attackaction.png',delay=.3), "6", "restart")
-        machine.add_state("6", FindAndClickImageAction('Media/newtroopaction.png',delay=2), "7", "restart")
-        machine.add_state("7", FindAndClickImageAction('Media/marchaction.png',delay=2), "alliancehelp", "restart")
-        machine.add_state("alliancehelp", FindAndClickImageAction('Media/alliancehelp.png', delay=2), "proverka1","proverka1")
-        machine.add_state("proverka1", FindImageAction('Media/proverka1.png', delay=2), "proverka1","heal1")
-        #machine.add_state("8", FindImageAction('Media/victory2.png', delay=1), "10","8")
-        #machine.add_state("9", FindImageAction('Media/victoryreturn.png', delay=1), "10","9")
-        #machine.add_state("10", ManualSleepAction(delay=50), "heal1", "restart")
+        machine.add_state("1", FindAndClickImageAction('Media/explorenight.png', delay=random.uniform(2, 5), offset_y=60), "2", "4q")
+        machine.add_state("2", FindAndClickImageAction('Media/exploreicon.png', delay=random.uniform(2, 5)), "3", "restart")
+        machine.add_state("3", FindAndClickImageAction('Media/exploreaction.png', delay=random.uniform(2, 5)), "5", "4")
+        machine.add_state("4", FindAndClickImageAction('Media/exploreaction3.png', delay=random.uniform(2, 5)), "5", "4q")
+        machine.add_state("5", FindAndClickImageAction('Media/exploreaction2.png', delay=random.uniform(2, 5)), "6", "4")
+        machine.add_state("6", FindAndClickImageAction('Media/sendaction.png', delay=random.uniform(2, 5)), "7", "5")
 
-        machine.add_state("heal1", FindImageAction('Media/explorehome.png', delay=1), "home","explorehome2")
-        machine.add_state("home", FindAndClickImageAction('Media/explorehome.png', delay=2), "explorehome2", "restart")
-        machine.add_state("explorehome2", FindImageAction('Media/explorehome2.png', delay=1), "curetroops","restart")
-        machine.add_state("curetroops", FindAndClickImageAction('Media/curetroops.png', delay=2), "healaction", "restart")
-        machine.add_state("healaction", FindAndClickImageAction('Media/healaction.png', delay=5), "pickuptroopscured", "restart")
-        machine.add_state("pickuptroopscured", FindAndClickImageAction('Media/pickuptroopscured.png', delay=3), "1q", "restart")
+        machine.add_state("4q", FindImageAction('Media/exploreaction4.png', delay=random.uniform(1, 2)), "4w", "4w")
+        machine.add_state("4w", FindAndClickImageAction('Media/exploreaction5.png', delay=random.uniform(2, 5)), "2", "restart")
 
+        machine.add_state("restart", FindAndClickImageAction('Media/explorehome.png', delay=random.uniform(2, 5)), "1q", "restart1")
+        machine.add_state("restart1", FindImageAction('Media/explorehome2.png', delay=random.uniform(1, 2)), "1q", "restart2")
+        machine.add_state("restart2", PressKeyAction('escape', delay=random.uniform(1, 2)), "restart3")
+        machine.add_state("restart3", FindAndClickImageAction('Media/otmena.png', delay=random.uniform(2, 5)), "1q", "1q")
 
-        machine.add_state("restart", FindAndClickImageAction('Media/explorehome.png', delay=3), "1q", "restart1")
-        machine.add_state("restart1", FindImageAction('Media/explorehome2.png', delay=1), "1q", "restart2")
-        machine.add_state("restart2", PressKeyAction('escape',delay=1), "restart3")
-        machine.add_state("restart3", FindAndClickImageAction('Media/otmena.png',delay=2), "1q", "1q")
+        machine.add_state("7", FindAndClickImageAction('Media/explorehome.png', delay=random.uniform(2, 5)), "1q", "restart")
 
         machine.set_initial_state("1q")
-        return machine    
+        return machine
+
+    def farm_varvar_heal(self):
+        machine = self.create_machine()
+
+        machine.add_state("1q", FindImageAction('Media/explorehome.png', delay=random.uniform(1, 2)), "1", "1w")
+        machine.add_state("1w", FindImageAction('Media/explorehome2.png', delay=random.uniform(1, 2)), "1e", "restart")
+        machine.add_state("1e", FindAndClickImageAction('Media/pickuptroopscured.png', delay=random.uniform(2, 5)), "1", "1r")
+        machine.add_state("1r", FindAndClickImageAction('Media/curetroops.png', delay=random.uniform(2, 5)), "1e", "1r")
+        machine.add_state("1r", FindAndClickImageAction('Media/explorehome2.png', delay=random.uniform(2, 5)), "1", "restart")
+
+        machine.add_state("1", FindAndClickImageAction('Media/ficon.png', delay=random.uniform(2, 5)), "2", "restart")
+        machine.add_state("2", FindAndClickImageAction('Media/barbland.png', delay=random.uniform(2, 5)), "3", "restart")
+        machine.add_state("3", FindAndClickImageAction('Media/searchaction.png', delay=random.uniform(2, 5)), "4", "restart")
+        machine.add_state("4", FindAndClickImageAction('Media/arrow.png', delay=random.uniform(2, 5), offset_y=105), "5", "restart")
+        machine.add_state("5", FindAndClickImageAction('Media/attackaction.png', delay=random.uniform(2, 5)), "6", "restart")
+        machine.add_state("6", FindAndClickImageAction('Media/newtroopaction.png', delay=random.uniform(2, 5)), "7", "restart")
+        machine.add_state("7", FindAndClickImageAction('Media/marchaction.png', delay=random.uniform(2, 5)), "alliancehelp", "restart")
+        machine.add_state("alliancehelp", FindAndClickImageAction('Media/alliancehelp.png', delay=random.uniform(2, 5)), "proverka1", "proverka1")
+        machine.add_state("proverka1", FindImageAction('Media/proverka1.png', delay=random.uniform(1, 2)), "proverka1", "heal1")
+
+        machine.add_state("heal1", FindImageAction('Media/explorehome.png', delay=random.uniform(1, 2)), "home", "explorehome2")
+        machine.add_state("home", FindAndClickImageAction('Media/explorehome.png', delay=random.uniform(2, 5)), "explorehome2", "restart")
+        machine.add_state("explorehome2", FindImageAction('Media/explorehome2.png', delay=random.uniform(1, 2)), "curetroops", "restart")
+        machine.add_state("curetroops", FindAndClickImageAction('Media/curetroops.png', delay=random.uniform(2, 5)), "healaction", "restart")
+        machine.add_state("healaction", FindAndClickImageAction('Media/healaction.png', delay=random.uniform(2, 5)), "pickuptroopscured", "restart")
+        machine.add_state("pickuptroopscured", FindAndClickImageAction('Media/pickuptroopscured.png', delay=random.uniform(2, 5)), "1q", "restart")
+
+        machine.add_state("restart", FindAndClickImageAction('Media/explorehome.png', delay=random.uniform(2, 5)), "1q", "restart1")
+        machine.add_state("restart1", FindImageAction('Media/explorehome2.png', delay=random.uniform(1, 2)), "1q", "restart2")
+        machine.add_state("restart2", PressKeyAction('escape', delay=random.uniform(1, 2)), "restart3")
+        machine.add_state("restart3", FindAndClickImageAction('Media/otmena.png', delay=random.uniform(2, 5)), "1q", "1q")
+
+        machine.set_initial_state("1q")
+        return machine
         
     def _scout_explore(self):
         machine = self.create_machine()
@@ -174,6 +152,31 @@ class ActionSets:
 
         machine.add_state("backtocity", PressKeyAction('space'),"explorenight")
         machine.set_initial_state("explorenight")
+        return machine
+        
+    def _farm_varvars (self):
+        machine = self.create_machine()
+        machine.add_state("1q", FindImageAction('Media/explorehome.png', random.uniform(1, 2)), "1","1w")
+        machine.add_state("1w", FindImageAction('Media/explorehome2.png', random.uniform(1, 2)), "1e","restart")
+        machine.add_state("1e", FindAndClickImageAction('Media/explorehome2.png', random.uniform(2, 5)), "1", "restart")
+
+        machine.add_state("1", FindAndClickImageAction('Media/ficon.png',random.uniform(2, 5)), "2", "restart")
+        machine.add_state("2", FindAndClickImageAction('Media/barbland.png',random.uniform(2, 5)), "3", "restart")
+        machine.add_state("3", FindAndClickImageAction('Media/searchaction.png',random.uniform(2, 5)), "4", "restart")
+        machine.add_state("4", FindAndClickImageAction('Media/arrow.png',random.uniform(2, 5), offset_y=105), "5","restart")
+        machine.add_state("5", FindAndClickImageAction('Media/attackaction.png',random.uniform(2, 5)), "6", "restart")
+        machine.add_state("6", FindAndClickImageAction('Media/newtroopaction.png',random.uniform(2, 5)), "7", "restart")
+        machine.add_state("7", FindAndClickImageAction('Media/marchaction.png',random.uniform(2, 15)), "10", "restart")
+        #machine.add_state("8", FindImageAction('Media/victory2.png', delay=1), "10","8")
+        #machine.add_state("9", FindImageAction('Media/victoryreturn.png', delay=1), "10","9")
+        machine.add_state("10", ManualSleepAction(delay=60), "1q", "restart") # Ожидание 1 минуту
+
+        machine.add_state("restart", FindAndClickImageAction('Media/explorehome.png', random.uniform(2, 5)), "1q", "restart1")
+        machine.add_state("restart1", FindImageAction('Media/explorehome2.png', random.uniform(1, 3)), "1q", "restart2")
+        machine.add_state("restart2", PressKeyAction('escape', random.uniform(1, 3)), "restart3")
+        machine.add_state("restart3", FindAndClickImageAction('Media/otmena.png', delay=random.uniform(2, 5)), "1q", "1q")
+
+        machine.set_initial_state("1q")
         return machine
         
     def _farm_barb_all (self):
