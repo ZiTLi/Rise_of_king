@@ -6,7 +6,6 @@ import keyboard
 import pygetwindow as gw
 from PyQt5.QtCore import pyqtSignal
 import importlib
-from action_sets import ActionSets
 
 class OSROKBOT:
     def __init__(self, window_title, delay=1):
@@ -18,47 +17,58 @@ class OSROKBOT:
         self.signal_emitter = SignalEmitter()
         self.is_running = False
         self.all_threads_joined = True  # New flag
+        self.UI = None # New attribute
 
     def run(self, state_machines):
-        self.stop_event.clear()  # Clear the stop event here
-        self.all_threads_joined = False  # Set the flag to False since threads are going to run
+        self.stop_event.clear()
+        self.all_threads_joined = False
 
         def run_single_machine(machine):
             while not self.stop_event.is_set():
                 if self.pause_event.is_set():
-                    time.sleep(self.delay)  # Sleep a little to reduce CPU usage
+                    time.sleep(self.delay)
+                    continue
+                if self.UI and self.UI.stop_flag:  # Проверка флага stop_flag
+                    self.stop()
+                    return
+                if self.UI and self.UI.pause_flag: # проверка флага pause_flag
+                    time.sleep(self.delay)
                     continue
                 if machine.execute():
                     time.sleep(self.delay)
 
         threads = [threading.Thread(target=run_single_machine, args=(machine,)) for machine in state_machines]
-        
+
         for t in threads:
             t.start()
 
         for t in threads:
             t.join()
 
-        self.all_threads_joined = True  # Set the flag to True since all threads have joined
+        self.all_threads_joined = True
         self.is_running = False
 
     def start(self, steps):
-        if self.is_running or not self.all_threads_joined:  # Check if it is already running or old threads haven't stopped
+        if self.is_running or not self.all_threads_joined:
             return
 
-        self.is_running = True  # Set to True when starting
+        self.is_running = True
         threading.Thread(target=self.run, args=(steps,)).start()
 
     def stop(self):
         self.stop_event.set()
-        self.is_running = False  # Set to False when stopping
+        self.is_running = False
+        if self.UI: # сброс флага stop_flag
+            self.UI.stop_flag = False
 
     def toggle_pause(self):
         if self.pause_event.is_set():
-            self.pause_event.clear()  # Resume
+            self.pause_event.clear()
         else:
-            self.pause_event.set()  # Pause
-        self.signal_emitter.pause_toggled.emit(self.pause_event.is_set())  # Emit the signal using the signal emitter
+            self.pause_event.set()
+        self.signal_emitter.pause_toggled.emit(self.pause_event.is_set())
+        if self.UI: # сброс флага pause_flag
+            self.UI.pause_flag = self.pause_event.is_set()
 
     def is_paused(self):
         return self.pause_event.is_set()
