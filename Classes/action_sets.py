@@ -17,6 +17,7 @@ from Actions.find_gems_action import FindGemAction
 from helpers import Helpers
 import random
 import inspect
+import time
 
 class ActionSets:
     def __init__(self, OS_ROKBOT):
@@ -24,23 +25,39 @@ class ActionSets:
     
     def create_machine(self):
         return StateMachine()
-    
+
     def run_random(self):
         scripts = [
             method
             for method_name, method in inspect.getmembers(self, predicate=inspect.ismethod)
             if method.__self__ == self
             and not method_name.startswith('_')
-            and method_name not in ('__init__', 'create_machine', 'run_random_scripts', 'TEST')  # Исключаем ненужные методы
+            and method_name not in ('__init__', 'create_machine', 'run_random', 'TEST')
         ]
 
         while True:
+            if self.OS_ROKBOT.stop_event.is_set():  # Проверка в начале цикла while True
+                self.OS_ROKBOT.stop_event.clear()
+                return
+
             script = random.choice(scripts)
             num_runs = random.randint(2, 5)
-            for _ in range(num_runs):
+            self.OS_ROKBOT.UI.currentState(f"Running script: {script.__name__}, runs left: {num_runs}")
+            for i in range(num_runs):
+                if self.OS_ROKBOT.stop_event.is_set():  # Проверка внутри цикла for
+                    self.OS_ROKBOT.stop_event.clear()
+                    return
+
                 machine = script()
                 while machine.current_state:
+                    if self.OS_ROKBOT.pause_event.is_set():
+                        time.sleep(1)
+                        continue
+                    if self.OS_ROKBOT.stop_event.is_set():  # Проверка внутри цикла while machine.current_state
+                        self.OS_ROKBOT.stop_event.clear()
+                        return
                     machine.execute()
+                self.OS_ROKBOT.UI.currentState(f"Script {script.__name__} run {i+1}/{num_runs} completed")
 
     def TEST (self):
         machine = self.create_machine()
@@ -446,15 +463,6 @@ class ActionSets:
 
         machine.set_initial_state("armyc")
         return machine
-
-    def email_captcha (self):
-        machine = self.create_machine()
-        machine.add_state("findcaptcha",  FindAndClickImageAction('Media/captchachest.png',delay=11), "notify","findcaptcha")
-        machine.add_state("notify",  SendEmailAction(), "pause")
-        machine.add_state("pause",  PauseAction(OS_ROKBOT=self.OS_ROKBOT), "findcaptcha")
-        machine.set_initial_state("findcaptcha")
-        return machine
-    
 
     def _lyceum (self):
         machine = self.create_machine()
