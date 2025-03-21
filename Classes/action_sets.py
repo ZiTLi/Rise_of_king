@@ -40,7 +40,7 @@ class ActionSets:
             for _ in range(num_runs):
                 machine = script()
                 while machine.current_state:
-                    machine.run()
+                    machine.execute()
 
     def TEST (self):
         machine = self.create_machine()
