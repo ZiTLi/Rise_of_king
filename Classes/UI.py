@@ -1,6 +1,5 @@
 import sys
 from PyQt5 import QtWidgets, QtGui, QtCore
-
 from action_sets import ActionSets
 from OS_ROKBOT import OSROKBOT
 import pygetwindow as gw
@@ -236,7 +235,7 @@ class UI(QtWidgets.QWidget):
 
         text_layout.addWidget(self.current_state_label_title)
         text_layout.addWidget(self.current_state_label)
-        text_layout.setContentsMargins(0, 0, 0, 0) # Adjust margins as needed
+        text_layout.setContentsMargins(0, 0, 0, 0) 
 
         content_layout = QtWidgets.QVBoxLayout()
         content_layout.setSpacing(2)
@@ -245,8 +244,7 @@ class UI(QtWidgets.QWidget):
         button_layout.setSpacing(2)
         content_layout.addLayout(button_layout)
         content_layout.addWidget(self.action_set_combo_box)
-        #content_layout.addWidget(self.check_captcha_checkbutton)
-        content_layout.addLayout(debug_layout) # Add it to the layout
+        content_layout.addLayout(debug_layout) 
 
         # Main Layout
         layout = QtWidgets.QVBoxLayout()
@@ -278,13 +276,18 @@ class UI(QtWidgets.QWidget):
         WindowHandler().activate_window("OSROKBOT")
         GLOBAL_VARS.UI = self
 
-        self.is_dragging = False  # Добавлено
-        self.is_moving = False  # Добавлено
+            # Новые флаги 
+        self.is_dragging = False
+        self.is_moving = False 
+        self.pause_flag = False
+        self.stop_flag = False
+        
+        self.OS_ROKBOT.UI = self
 
         self.reload_button = QtWidgets.QPushButton("X")
-        self.reload_button.clicked.connect(self.reload_bot)  # Подключаем обработчик
+        self.reload_button.clicked.connect(self.reload_bot)
         button_layout.addWidget(self.reload_button)
-    
+
     def reload_bot(self):
         """
         Перезагружает приложение бота.
@@ -351,19 +354,36 @@ class UI(QtWidgets.QWidget):
                 self.toggle_pause()
             selected_index = self.action_set_combo_box.currentIndex()
             if selected_index != -1:
-                action_group = getattr(self.action_sets, self.action_set_names[selected_index])()
-                actions_groups = [action_group]
-                #if self.check_captcha_checkbutton.isChecked():
-                #    actions_groups.append(self.action_sets.email_captcha())
-                self.OS_ROKBOT.start(actions_groups)
-                self.status_label.setText(' Running')
-                self.status_label.setStyleSheet("color: green;font-weight: bold;")
-            self.play_button.hide()
-            self.stop_button.show()
-            self.pause_button.show()
+                # Get the selected action name
+                selected_action_name = self.action_set_names[selected_index]
+
+                # If the selected action is "run_random", run random scripts.
+                if selected_action_name == "run_random":
+                    # Run random scripts in a separate thread to not block the UI.
+                    threading.Thread(target=self.action_sets.run_random).start()
+                    self.status_label.setText(' Run Random Scripts')
+                    self.status_label.setStyleSheet("color: green;font-weight: bold;")
+                    self.play_button.hide()
+                    self.stop_button.show()
+                    self.pause_button.show()
+  
+                    
+                else:
+                    # Run the selected action
+                    action_group = getattr(self.action_sets, selected_action_name)()
+                    actions_groups = [action_group]
+                    #if self.check_captcha_checkbutton.isChecked():
+                    #   actions_groups.append(self.action_sets.email_captcha())
+                    self.OS_ROKBOT.start(actions_groups)
+                    self.status_label.setText(' Run')
+                    self.status_label.setStyleSheet("color: green;font-weight: bold;")
+                    self.play_button.hide()
+                    self.stop_button.show()
+                    self.pause_button.show()
+  
 
     def stop_automation(self):
-        
+        self.stop_flag = True
         self.OS_ROKBOT.stop()
         self.status_label.setText(' Ready')
         self.status_label.setStyleSheet("color: #4a90e2; font-weight: bold; text-align: left;")
@@ -373,6 +393,7 @@ class UI(QtWidgets.QWidget):
         threading.Thread(target=self.call_current_state, args=("Ready",)).start()
 
     def toggle_pause(self):
+        self.pause_flag = not self.pause_flag
         self.OS_ROKBOT.toggle_pause()
         if self.OS_ROKBOT.is_paused():
             threading.Thread(target=self.call_current_state, args=("Paused",)).start()
