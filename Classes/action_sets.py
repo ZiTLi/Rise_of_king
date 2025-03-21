@@ -31,7 +31,7 @@ class ActionSets:
             for method_name, method in inspect.getmembers(self, predicate=inspect.ismethod)
             if method.__self__ == self
             and not method_name.startswith('_')
-            and method_name not in ('__init__', 'create_machine', 'run_random_scripts')  # Исключаем ненужные методы
+            and method_name not in ('__init__', 'create_machine', 'run_random_scripts', 'TEST')  # Исключаем ненужные методы
         ]
 
         while True:
