@@ -42,9 +42,15 @@ class ActionSets:
                 return
     
             script = random.choice(scripts)
-            run_time = random.randint(60, 300)  # Случайное время от 1 до 5 минут (в секундах)
+            if script.__name__ == "help_ally":
+                run_time = random.randint(40, 60)  
+            else:
+                run_time = random.randint(60, 300) 
+    
             start_time = time.time()
-            self.OS_ROKBOT.UI.currentState(f"Running script: {script.__name__} for {run_time} seconds")
+            message = f"Running script: {script.__name__} for {run_time} seconds"
+            self.OS_ROKBOT.UI.currentState(message)
+            print(message)  # Вывод в консоль
     
             machine = script()
             while time.time() - start_time < run_time:
@@ -62,13 +68,14 @@ class ActionSets:
                 else:
                     break
     
-            self.OS_ROKBOT.UI.currentState(f"Script {script.__name__} completed")
+            message = f"Script {script.__name__} completed"
+            self.OS_ROKBOT.UI.currentState(message)
+            print(message)  # Вывод в консоль
 
     def TEST (self):
         machine = self.create_machine()
-        machine.add_state("1", FindImageAction('Media/pickuptroopscured.png', delay=1), "2", "restart")
-        machine.add_state("2", FindAndClickImageAction('Media/pickuptroopscured.png',delay=1.5), "1", "restart")
-        machine.add_state("restart", ManualSleepAction(delay=1), "1", "restart")
+        machine.add_state("1", FindAndClickImageAction('Media/escxdark.png', delay=random.uniform(2, 5)), "2", "2")
+        machine.add_state("2", FindAndClickImageAction('Media/escxwhite.png', delay=random.uniform(2, 5)), "1", "1")
         machine.set_initial_state("1")
         return machine
 
@@ -130,6 +137,34 @@ class ActionSets:
         machine.add_state("restart3", FindAndClickImageAction('Media/otmena.png', delay=random.uniform(2, 5)), "1q", "1q")
 
         machine.set_initial_state("1q")
+        return machine
+    
+    def help_ally (self):
+        machine = self.create_machine()
+        machine.add_state("alliancehelp", FindAndClickImageAction('Media/alliancehelp.png', delay=random.uniform(2, 5)), "explorehome", "explorehome")
+        machine.add_state("explorehome", FindAndClickImageAction('Media/explorehome.png', delay=random.uniform(2, 5)), "corn", "corn")
+
+        machine.add_state("corn", FindAndClickImageAction('Media/corn.png', delay=random.uniform(2, 5)), "wood", "wood")
+        machine.add_state("wood", FindAndClickImageAction('Media/wood.png', delay=random.uniform(2, 5)), "gold", "gold")
+        machine.add_state("gold", FindAndClickImageAction('Media/gold.png', delay=random.uniform(2, 5)), "stone", "stone")
+        machine.add_state("stone", FindAndClickImageAction('Media/stone.png', delay=random.uniform(2, 5)), "curetroops", "curetroops")
+
+
+        machine.add_state("curetroops", FindAndClickImageAction('Media/curetroops.png', delay=random.uniform(2, 5)), "healaction", "restart")
+        machine.add_state("healaction", FindAndClickImageAction('Media/healaction.png', delay=random.uniform(2, 5)), "pickuptroopscured", "restart")
+        machine.add_state("pickuptroopscured", FindAndClickImageAction('Media/pickuptroopscured.png', delay=random.uniform(10, 15)), "3", "restart")
+
+        machine.add_state("3", FindAndClickImageAction('Media/pickuptroopscured.png',delay=1.5), "alliancehelp", "restart")
+
+        machine.add_state("restart", FindAndClickImageAction('Media/explorehome.png', delay=random.uniform(2, 5)), "alliancehelp", "restart1")
+        machine.add_state("restart1", FindImageAction('Media/explorehome2.png', delay=random.uniform(1, 2)), "alliancehelp", "restart21")
+
+        machine.add_state("restart21", FindAndClickImageAction('Media/escxdark.png', delay=random.uniform(2, 5)), "alliancehelp", "restart22")
+        machine.add_state("restart22", FindAndClickImageAction('Media/escxwhite.png', delay=random.uniform(2, 5)), "alliancehelp", "restart2")
+
+        machine.add_state("restart2", PressKeyAction('escape', delay=random.uniform(1, 2)), "restart3")
+        machine.add_state("restart3", FindAndClickImageAction('Media/otmena.png', delay=random.uniform(2, 5)), "alliancehelp", "alliancehelp")
+        machine.set_initial_state("alliancehelp")
         return machine
         
     def _scout_explore(self):
