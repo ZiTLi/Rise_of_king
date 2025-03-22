@@ -26,6 +26,7 @@ class ActionSets:
     def create_machine(self):
         return StateMachine()
 
+
     def run_random(self):
         scripts = [
             method
@@ -34,30 +35,34 @@ class ActionSets:
             and not method_name.startswith('_')
             and method_name not in ('__init__', 'create_machine', 'run_random', 'TEST')
         ]
-
+    
         while True:
-            if self.OS_ROKBOT.stop_event.is_set():  # Проверка в начале цикла while True
+            if self.OS_ROKBOT.stop_event.is_set():
                 self.OS_ROKBOT.stop_event.clear()
                 return
-
+    
             script = random.choice(scripts)
-            num_runs = random.randint(2, 5)
-            self.OS_ROKBOT.UI.currentState(f"Running script: {script.__name__}, runs left: {num_runs}")
-            for i in range(num_runs):
-                if self.OS_ROKBOT.stop_event.is_set():  # Проверка внутри цикла for
+            run_time = random.randint(60, 300)  # Случайное время от 1 до 5 минут (в секундах)
+            start_time = time.time()
+            self.OS_ROKBOT.UI.currentState(f"Running script: {script.__name__} for {run_time} seconds")
+    
+            machine = script()
+            while time.time() - start_time < run_time:
+                if self.OS_ROKBOT.stop_event.is_set():
                     self.OS_ROKBOT.stop_event.clear()
                     return
-
-                machine = script()
-                while machine.current_state:
-                    if self.OS_ROKBOT.pause_event.is_set():
-                        time.sleep(1)
-                        continue
-                    if self.OS_ROKBOT.stop_event.is_set():  # Проверка внутри цикла while machine.current_state
-                        self.OS_ROKBOT.stop_event.clear()
-                        return
+    
+                if self.OS_ROKBOT.pause_event.is_set():
+                    time.sleep(1)
+                    continue
+    
+                if machine.current_state:
                     machine.execute()
-                self.OS_ROKBOT.UI.currentState(f"Script {script.__name__} run {i+1}/{num_runs} completed")
+                    time.sleep(1)  # Добавим задержку, чтобы не перегружать систему
+                else:
+                    break
+    
+            self.OS_ROKBOT.UI.currentState(f"Script {script.__name__} completed")
 
     def TEST (self):
         machine = self.create_machine()
@@ -105,7 +110,7 @@ class ActionSets:
         machine.add_state("1", FindAndClickImageAction('Media/ficon.png', delay=random.uniform(2, 5)), "2", "restart")
         machine.add_state("2", FindAndClickImageAction('Media/barbland.png', delay=random.uniform(2, 5)), "3", "restart")
         machine.add_state("3", FindAndClickImageAction('Media/searchaction.png', delay=random.uniform(2, 5)), "4", "restart")
-        machine.add_state("4", FindAndClickImageAction('Media/arrow.png', delay=random.uniform(2, 5), offset_y=105), "5", "restart")
+        machine.add_state("4", FindAndClickImageAction('Media/arrow.png', delay=1.5, offset_y=105), "5", "restart")
         machine.add_state("5", FindAndClickImageAction('Media/attackaction.png', delay=random.uniform(2, 5)), "6", "restart")
         machine.add_state("6", FindAndClickImageAction('Media/newtroopaction.png', delay=random.uniform(2, 5)), "7", "restart")
         machine.add_state("7", FindAndClickImageAction('Media/marchaction.png', delay=random.uniform(2, 5)), "alliancehelp", "restart")
