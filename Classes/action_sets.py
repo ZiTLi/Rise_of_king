@@ -44,6 +44,8 @@ class ActionSets:
             script = random.choice(scripts)
             if script.__name__ == "help_ally":
                 run_time = random.randint(40, 60)  
+        #    elif script.__name__ == "figwam":
+        #       run_time = random.randint(30, 50)
             else:
                 run_time = random.randint(60, 300) 
     
@@ -141,28 +143,37 @@ class ActionSets:
     
     def help_ally (self):
         machine = self.create_machine()
-        machine.add_state("alliancehelp", FindAndClickImageAction('Media/alliancehelp.png', delay=random.uniform(2, 5)), "explorehome", "explorehome")
-        machine.add_state("explorehome", FindAndClickImageAction('Media/explorehome.png', delay=random.uniform(2, 5)), "corn", "corn")
+        machine.add_state("alliancehelp", FindImageAction('Media/alliancehelp.png'), "alliancehelp2", "explorehome")
+        machine.add_state("alliancehelp2", FindAndClickImageAction('Media/alliancehelp.png', delay=random.uniform(2, 5)), "explorehome", "explorehome")
+        machine.add_state("explorehome", FindImageAction('Media/explorehome.png'), "explorehome2", "corn")
+        machine.add_state("explorehome2", FindAndClickImageAction('Media/explorehome.png', delay=random.uniform(2, 5)), "corn", "corn")
 
-        machine.add_state("corn", FindAndClickImageAction('Media/corn.png', delay=random.uniform(2, 5)), "wood", "wood")
-        machine.add_state("wood", FindAndClickImageAction('Media/wood.png', delay=random.uniform(2, 5)), "gold", "gold")
-        machine.add_state("gold", FindAndClickImageAction('Media/gold.png', delay=random.uniform(2, 5)), "stone", "stone")
-        machine.add_state("stone", FindAndClickImageAction('Media/stone.png', delay=random.uniform(2, 5)), "curetroops", "curetroops")
-
-
-        machine.add_state("curetroops", FindAndClickImageAction('Media/curetroops.png', delay=random.uniform(2, 5)), "healaction", "restart")
+        machine.add_state("corn", FindImageAction('Media/corn.png'), "corn2", "wood")
+        machine.add_state("corn2", FindAndClickImageAction('Media/corn.png', delay=random.uniform(2, 5)), "wood", "wood")
+        machine.add_state("wood", FindImageAction('Media/wood.png'), "wood2", "gold")
+        machine.add_state("wood2", FindAndClickImageAction('Media/wood.png', delay=random.uniform(2, 5)), "gold", "gold")
+        machine.add_state("gold", FindImageAction('Media/gold.png'), "gold2", "stone")
+        machine.add_state("gold2", FindAndClickImageAction('Media/gold.png', delay=random.uniform(2, 5)), "stone", "stone")
+        machine.add_state("stone", FindImageAction('Media/stone.png'), "stone2", "curetroops")
+        machine.add_state("stone2", FindAndClickImageAction('Media/stone.png', delay=random.uniform(2, 5)), "curetroops", "curetroops")
+        
+        machine.add_state("curetroops", FindImageAction('Media/curetroops.png'), "curetroops2", "pickuptroopscured1")
+        machine.add_state("curetroops2", FindAndClickImageAction('Media/curetroops.png', delay=random.uniform(2, 5)), "healaction", "restart")
         machine.add_state("healaction", FindAndClickImageAction('Media/healaction.png', delay=random.uniform(2, 5)), "pickuptroopscured", "restart")
-        machine.add_state("pickuptroopscured", FindAndClickImageAction('Media/pickuptroopscured.png', delay=random.uniform(10, 15)), "3", "restart")
+        machine.add_state("pickuptroopscured1", FindImageAction('Media/pickuptroopscured.png'), "pickuptroopscured", "restart")
+        machine.add_state("pickuptroopscured", FindAndClickImageAction('Media/pickuptroopscured.png', delay=random.uniform(10, 15)), "alliancehelp", "restart")
 
-        machine.add_state("3", FindAndClickImageAction('Media/pickuptroopscured.png',delay=1.5), "alliancehelp", "restart")
-
-        machine.add_state("restart", FindAndClickImageAction('Media/explorehome.png', delay=random.uniform(2, 5)), "alliancehelp", "restart1")
-        machine.add_state("restart1", FindImageAction('Media/explorehome2.png', delay=random.uniform(1, 2)), "alliancehelp", "restart21")
-
+        machine.add_state("restart", FindImageAction('Media/explorehome.png'), "restart11", "restart1")
+        machine.add_state("restart11", FindAndClickImageAction('Media/explorehome.png', delay=random.uniform(2, 5)), "alliancehelp", "restart1")
+        
+        machine.add_state("restart1", FindImageAction('Media/explorehome2.png'), "alliancehelp", "restart211")
+        machine.add_state("restart211", FindImageAction('Media/escxdark.png'), "restart21", "restart222")
         machine.add_state("restart21", FindAndClickImageAction('Media/escxdark.png', delay=random.uniform(2, 5)), "alliancehelp", "restart22")
+        machine.add_state("restart222", FindImageAction('Media/escxwhite.png'), "restart22", "restart2")
         machine.add_state("restart22", FindAndClickImageAction('Media/escxwhite.png', delay=random.uniform(2, 5)), "alliancehelp", "restart2")
 
-        machine.add_state("restart2", PressKeyAction('escape', delay=random.uniform(1, 2)), "restart3")
+        machine.add_state("restart2", PressKeyAction('escape', delay=random.uniform(1, 2)), "restart33")
+        machine.add_state("restart33", FindImageAction('Media/otmena.png'), "restart3", "alliancehelp")
         machine.add_state("restart3", FindAndClickImageAction('Media/otmena.png', delay=random.uniform(2, 5)), "alliancehelp", "alliancehelp")
         machine.set_initial_state("alliancehelp")
         return machine
