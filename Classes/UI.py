@@ -8,7 +8,10 @@ from window_handler import WindowHandler
 from global_vars import GLOBAL_VARS
 import threading
 import inspect 
+from Actions.find_and_click_image_action import FindAndClickImageActionMouse
 import time
+import threading
+
 
 class UI(QtWidgets.QWidget):
     def __init__(self, window_title, delay=0):
@@ -17,7 +20,6 @@ class UI(QtWidgets.QWidget):
         button_layout = QtWidgets.QHBoxLayout()
         button_layout.setAlignment(QtCore.Qt.AlignLeft)
         self.OS_ROKBOT = OSROKBOT(window_title, delay)
-        self.OS_ROKBOT.signal_emitter.pause_toggled.connect(self.on_pause_toggled) # Connect the signal to the slot
         self.action_sets = ActionSets(OS_ROKBOT=self.OS_ROKBOT)
         self.target_title = window_title
         self.timer = QtCore.QTimer(self)
@@ -142,15 +144,6 @@ class UI(QtWidgets.QWidget):
         self.stop_button.clicked.connect(self.stop_automation)
         button_layout.addWidget(self.stop_button)
 
-        # Create the Pause/Unpause Button
-        self.pause_button = QtWidgets.QPushButton()
-        self.pause_icon = QtGui.QIcon("Media/UI/pause_icon.svg")
-        self.unpause_icon = QtGui.QIcon("Media/UI/play_icon.svg")
-        self.pause_button.setIcon(self.pause_icon)
-        self.pause_button.setIconSize(QtCore.QSize(24, 24))
-        self.pause_button.clicked.connect(self.toggle_pause)
-        button_layout.addWidget(self.pause_button)
-
 
         # Action sets dropdown
         self.action_set_combo_box = QtWidgets.QComboBox()
@@ -163,23 +156,21 @@ class UI(QtWidgets.QWidget):
             for method_name, method in inspect.getmembers(self.action_sets, predicate=inspect.ismethod)
             if method.__self__ == self.action_sets
             and not method_name.startswith('_')  # Исключаем все методы которые начинаються с "_"
-            and method_name not in ('__init__', 'create_machine', 'email_captcha')  # Исключаем по списку вручную __init__ и create_machine
+            and method_name not in ('__init__', 'create_machine', 'email_captcha', 'get_action_class')  # Исключаем по списку вручную __init__ и create_machine
         ]
         self.action_set_combo_box.addItems(self.action_set_names)
 
-        # Checkbutton for captcha
-        #self.check_captcha_checkbutton = QtWidgets.QCheckBox("captcha")
-        #self.check_captcha_checkbutton.setStyleSheet("""
-        #    font-size: 11px;
-        #    background-color: #3a3a3a; 
-        #    color: #fff;             
-        #    border: 2px solid #4a90e2;  
-        #    border-radius: 8px;
-        #    padding: 2px;
-        #""")
-        #self.check_captcha_checkbutton.setChecked(True)
-
-        
+        # Checkbox for move_mouse
+        self.move_mouse_pynput = QtWidgets.QCheckBox("move_mouse")
+        self.move_mouse_pynput.setStyleSheet("""
+            font-size: 11px;
+            background-color: #3a3a3a;
+            color: #fff;
+            border: 2px solid #4a90e2;
+            border-radius: 8px;
+            padding: 2px;
+        """)
+        self.move_mouse_pynput.setChecked(True)
 
         # Content Layout
         debug_layout = QtWidgets.QVBoxLayout()
@@ -244,6 +235,7 @@ class UI(QtWidgets.QWidget):
         button_layout.setSpacing(2)
         content_layout.addLayout(button_layout)
         content_layout.addWidget(self.action_set_combo_box)
+        content_layout.addWidget(self.move_mouse_pynput)
         content_layout.addLayout(debug_layout) 
 
         # Main Layout
@@ -261,7 +253,6 @@ class UI(QtWidgets.QWidget):
 
         self.play_button.show()
         self.stop_button.hide()
-        self.pause_button.hide()
         #self.setFixedSize(100, 150)
         #fix horizontal size
         self.setFixedWidth(100)
@@ -279,7 +270,6 @@ class UI(QtWidgets.QWidget):
             # Новые флаги 
         self.is_dragging = False
         self.is_moving = False 
-        self.pause_flag = False
         self.stop_flag = False
         
         self.OS_ROKBOT.UI = self
@@ -306,8 +296,6 @@ class UI(QtWidgets.QWidget):
         self.current_state_label.setText(state_text)
         self.current_state_label.adjustSize() # Optional, to adjust the size of the label to fit the new text
 
-
-
     def update_position(self):
         if self.is_dragging or self.is_moving:
             return
@@ -325,62 +313,40 @@ class UI(QtWidgets.QWidget):
             if not self.isVisible():
                 self.show()
 
-
-
-    def on_pause_toggled(self, is_paused): # This is the slot
-        if is_paused:
-            self.status_label.setText(' Paused')
-            self.status_label.setStyleSheet("color: orange;")
-            self.pause_button.setIcon(self.unpause_icon) # Update the button icon
-            self.stop_button.show()
-            self.pause_button.show()
-            self.play_button.hide()
-        else:
-            self.status_label.setText(' Running')
-            self.status_label.setStyleSheet("color: green;")
-            self.pause_button.setIcon(self.pause_icon) # Update the button icon
-            self.play_button.hide()
-            self.pause_button.show()
-            self.pause_button.show()
-
-
-
     def start_automation(self):
         if self.OS_ROKBOT.is_running or not self.OS_ROKBOT.all_threads_joined:
             self.current_state_label.setText('Finishing last job\nwait 2s')
             return
+    
+        selected_index = self.action_set_combo_box.currentIndex()
+        if selected_index == -1:
+            self.current_state_label.setText('Select action')
+            return
+    
+        selected_action_name = self.action_set_names[selected_index]
+        move_mouse_checked = self.move_mouse_pynput.isChecked()
+    
+        if selected_action_name == "run_random":
+            threading.Thread(target=self.action_sets.run_random).start()
+            self.status_label.setText(' Run Random Scripts')
+            self.status_label.setStyleSheet("color: green;font-weight: bold;")
+            self.play_button.hide()
+            self.stop_button.show()
         else:
-            if self.OS_ROKBOT.is_paused():
-                self.toggle_pause()
-            selected_index = self.action_set_combo_box.currentIndex()
-            if selected_index != -1:
-                # Get the selected action name
-                selected_action_name = self.action_set_names[selected_index]
-
-                # If the selected action is "run_random", run random scripts.
-                if selected_action_name == "run_random":
-                    # Run random scripts in a separate thread to not block the UI.
-                    threading.Thread(target=self.action_sets.run_random).start()
-                    self.status_label.setText(' Run Random Scripts')
-                    self.status_label.setStyleSheet("color: green;font-weight: bold;")
-                    self.play_button.hide()
-                    self.stop_button.show()
-                    self.pause_button.show()
-  
-                    
-                else:
-                    # Run the selected action
-                    action_group = getattr(self.action_sets, selected_action_name)()
-                    actions_groups = [action_group]
-                    #if self.check_captcha_checkbutton.isChecked():
-                    #   actions_groups.append(self.action_sets.email_captcha())
-                    self.OS_ROKBOT.start(actions_groups)
-                    self.status_label.setText(' Run')
-                    self.status_label.setStyleSheet("color: green;font-weight: bold;")
-                    self.play_button.hide()
-                    self.stop_button.show()
-                    self.pause_button.show()
-  
+            action_method = getattr(self.action_sets, selected_action_name)
+    
+            # Проверяем, принимает ли метод аргумент move_mouse_checked
+            if "move_mouse_checked" in inspect.signature(action_method).parameters:
+                action_group = action_method(move_mouse_checked)
+            else:
+                action_group = action_method()
+    
+            actions_groups = [action_group]
+            self.OS_ROKBOT.start(actions_groups)
+            self.status_label.setText(' Run')
+            self.status_label.setStyleSheet("color: green;font-weight: bold;")
+            self.play_button.hide()
+            self.stop_button.show()
 
     def stop_automation(self):
         self.stop_flag = True
@@ -389,14 +355,7 @@ class UI(QtWidgets.QWidget):
         self.status_label.setStyleSheet("color: #4a90e2; font-weight: bold; text-align: left;")
         self.play_button.show()
         self.stop_button.hide()
-        self.pause_button.hide()
         threading.Thread(target=self.call_current_state, args=("Ready",)).start()
-
-    def toggle_pause(self):
-        self.pause_flag = not self.pause_flag
-        self.OS_ROKBOT.toggle_pause()
-        if self.OS_ROKBOT.is_paused():
-            threading.Thread(target=self.call_current_state, args=("Paused",)).start()
         
         
     def call_current_state(self,info):

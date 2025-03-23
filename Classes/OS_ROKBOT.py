@@ -13,7 +13,6 @@ class OSROKBOT:
         self.window_title = window_title
         self.delay = delay
         self.stop_event = threading.Event()
-        self.pause_event = threading.Event()
         self.signal_emitter = SignalEmitter()
         self.is_running = False
         self.all_threads_joined = True  # New flag
@@ -25,15 +24,9 @@ class OSROKBOT:
 
         def run_single_machine(machine):
             while not self.stop_event.is_set():
-                if self.pause_event.is_set():
-                    time.sleep(self.delay)
-                    continue
                 if self.UI and self.UI.stop_flag:  # Проверка флага stop_flag
                     self.stop()
                     return
-                if self.UI and self.UI.pause_flag: # проверка флага pause_flag
-                    time.sleep(self.delay)
-                    continue
                 if machine.execute():
                     time.sleep(self.delay)
 
@@ -61,14 +54,4 @@ class OSROKBOT:
         if self.UI: # сброс флага stop_flag
             self.UI.stop_flag = False
 
-    def toggle_pause(self):
-        if self.pause_event.is_set():
-            self.pause_event.clear()
-        else:
-            self.pause_event.set()
-        self.signal_emitter.pause_toggled.emit(self.pause_event.is_set())
-        if self.UI: # сброс флага pause_flag
-            self.UI.pause_flag = self.pause_event.is_set()
 
-    def is_paused(self):
-        return self.pause_event.is_set()
