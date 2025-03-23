@@ -3,6 +3,7 @@ import random
 import time
 import numpy as np
 from pynput.mouse import Controller, Button
+from termcolor import colored
 
 from Actions.action import Action
 from image_finder import ImageFinder
@@ -70,27 +71,34 @@ class FindAndClickImageActionMouse(Action):
         self.retard = retard
 
     def execute(self):
-        screenshot, win = self.window_handler.screenshot_window(self.window_title)
-        best_scale, best_loc, num_matches, best_max_val, target_image, screenshot_cv = self.image_finder._match_image(self.image, screenshot)
-        if best_max_val >= self.image_finder.threshold:
-            rects = np.array([(pt[0], pt[1], pt[0] + target_image.shape[1] * best_scale[0], pt[1] + target_image.shape[0] * best_scale[1]) for pt in best_loc])
-            pick = ImageFinder.non_max_suppression_fast(rects, 0.3)
-            for (startX, startY, endX, endY) in pick:
-                center_x = int(startX + (endX - startX) // 2 + win.left)
-                center_y = int(startY + (endY - startY) // 2 + win.top)
-                start_x, start_y = pyautogui.position()
-                if self.move_mouse:
-                    end_x, end_y = move_mouse_pynput(start_x, start_y, center_x + self.offset_x, center_y + self.offset_y, duration=random.uniform(1.5, 2.5))
-                else:
-                    pyautogui.moveTo(center_x + self.offset_x, center_y + self.offset_y)
-                    end_x, end_y = center_x + self.offset_x, center_y + self.offset_y
-                time.sleep(0.3)
-                offset_click_x = random.randint(-5, 5)
-                offset_click_y = random.randint(-5, 5)
-                mouse.click(Button.left)
-                time.sleep(self.delay)
-                return True
-        else:
+        try:
+            print(colored(f"Finding image: {self.image}", "yellow"))
+            screenshot, win = self.window_handler.screenshot_window(self.window_title)
+            best_scale, best_loc, num_matches, best_max_val, target_image, screenshot_cv = self.image_finder._match_image(self.image, screenshot)
+            if best_max_val >= self.image_finder.threshold:
+                rects = np.array([(pt[0], pt[1], pt[0] + target_image.shape[1] * best_scale[0], pt[1] + target_image.shape[0] * best_scale[1]) for pt in best_loc])
+                pick = ImageFinder.non_max_suppression_fast(rects, 0.3)
+                for (startX, startY, endX, endY) in pick:
+                    center_x = int(startX + (endX - startX) // 2 + win.left)
+                    center_y = int(startY + (endY - startY) // 2 + win.top)
+                    start_x, start_y = pyautogui.position()
+                    if self.move_mouse:
+                        end_x, end_y = move_mouse_pynput(start_x, start_y, center_x + self.offset_x, center_y + self.offset_y, duration=self.delay) # Используем self.delay
+                    else:
+                        pyautogui.moveTo(center_x + self.offset_x, center_y + self.offset_y)
+                        end_x, end_y = center_x + self.offset_x, center_y + self.offset_y
+                    time.sleep(0.3)
+                    offset_click_x = random.randint(-5, 5)
+                    offset_click_y = random.randint(-5, 5)
+                    mouse.click(Button.left)
+                    #time.sleep(self.delay)
+                    print(colored(f"Image {self.image} clicked successfully.", "green"))
+                    return True
+            else:
+                print(colored(f"Image {self.image} not found.", "red"))
+                return False
+        except Exception as e:
+            print(colored(f"Error clicking image {self.image}: {e}", "red"))
             return False
         
 class FindAndClickImageAction(Action):
