@@ -17,13 +17,14 @@ from helpers import Helpers
 import random
 import inspect
 import time
-
+import logging
 
 class ActionSets:
     def __init__(self, OS_ROKBOT):
         self.OS_ROKBOT = OS_ROKBOT
+        self.logger = logging.getLogger(__name__)
     
-    def create_machine(self, move_mouse_checked):
+    def create_machine(self, move_mouse_checked):  # Определяем метод с аргументом
         action_class = self.get_action_class(move_mouse_checked)
         return StateMachine()
 
@@ -33,71 +34,84 @@ class ActionSets:
             return FindAndClickImageActionMouse
         else:
             return FindAndClickImageAction
-
-    def TEST2(self, move_mouse_checked):
+    def TEST(self, move_mouse_checked):
+        """Метод TEST теперь принимает move_mouse_checked."""
         action_class = self.get_action_class(move_mouse_checked)
 
-
-        machine = self.create_machine()
-        machine.add_state("1", action_class('Media/escxdark.png', delay=random.uniform(2, 5)), "2", "2")
-        machine.add_state("2", action_class('Media/escxwhite.png', delay=random.uniform(2, 5)), "1", "1")
+        machine = self.create_machine(move_mouse_checked) #Передаем аргумент
+        machine.add_state("1", action_class('Media/escxdark.png', delay=random.uniform(1, 2)), "2", "2")
+        machine.add_state("2", action_class('Media/escxwhite.png', delay=random.uniform(1, 2)), "1", "1")
         machine.set_initial_state("1")
         return machine
-
+    
     def run_random(self):
         scripts = [
             method
             for method_name, method in inspect.getmembers(self, predicate=inspect.ismethod)
             if method.__self__ == self
             and not method_name.startswith('_')
-            and method_name not in ('__init__', 'create_machine', 'run_random', 'TEST', 'get_action_class')
+            and method_name not in ('__init__', 'create_machine', 'run_random', 'get_action_class')
         ]
-    
+
+        if not scripts:
+            self.logger.warning("No scripts available to run randomly.")
+            self.OS_ROKBOT.UI.currentState("No scripts available to run randomly.")
+            return
+
         while True:
             if self.OS_ROKBOT.stop_event.is_set():
                 self.OS_ROKBOT.stop_event.clear()
+                self.logger.info("Random script execution stopped.")
                 return
-    
+
             script = random.choice(scripts)
-            if script.__name__ == "help_ally":
-                run_time = random.randint(40, 60)  
-        #    elif script.__name__ == "figwam":
-        #       run_time = random.randint(30, 50)
+            script_name = script.__name__
+            move_mouse_checked = self.OS_ROKBOT.UI.move_mouse_pynput.isChecked()
+
+            if script_name == "help_ally":
+                run_time = random.randint(40, 60)
             else:
-                run_time = random.randint(60, 300) 
-    
+                run_time = random.randint(60, 300)
+
             start_time = time.time()
-            message = f"Running script: {script.__name__} for {run_time} seconds"
+            message = f"Running script: {script_name} for {run_time} seconds"
+
+            self.logger.info(message)
             self.OS_ROKBOT.UI.currentState(message)
-            print(message)  # Вывод в консоль
-    
-            machine = script()
-            while time.time() - start_time < run_time:
-                if self.OS_ROKBOT.stop_event.is_set():
-                    self.OS_ROKBOT.stop_event.clear()
-                    return    
-                if machine.current_state:
-                    machine.execute()
-                    time.sleep(1)  # Добавим задержку, чтобы не перегружать систему
+
+            try:
+                # Проверим, принимает ли скрипт аргумент move_mouse_checked
+                if "move_mouse_checked" in inspect.signature(script).parameters:
+                    machine = script(move_mouse_checked)
                 else:
-                    break
+                    machine = script()
+
+                while time.time() - start_time < run_time:
+                    if self.OS_ROKBOT.stop_event.is_set():
+                        self.OS_ROKBOT.stop_event.clear()
+                        self.logger.info("Random script execution stopped prematurely.")
+                        return
+
+                    if machine.current_state:
+                        machine.execute()
+                        time.sleep(1)
+                    else:
+                        break
+
+                message = f"Script {script_name} completed"
+                self.logger.info(message)
+                self.OS_ROKBOT.UI.currentState(message)
+
+            except Exception as e:
+                self.logger.error(f"Error running script {script_name}: {e}", exc_info=True)
+                self.OS_ROKBOT.UI.currentState(f"Error running script {script_name}: {e}")
+                time.sleep(5)
+                print(e)    
     
-            message = f"Script {script.__name__} completed"
-            self.OS_ROKBOT.UI.currentState(message)
-            print(message)  # Вывод в консоль
-
-    def TEST (self, move_mouse_checked):
-        machine = self.create_machine()
-        machine.add_state("1", action_classMouse('Media/escxdark.png', delay=random.uniform(2, 5)), "2", "2")
-        machine.add_state("2", action_class('Media/escxwhite.png', delay=random.uniform(2, 5)), "1", "1")
-        machine.set_initial_state("1")
-        return machine
-
-
     def scout_karta(self, move_mouse_checked):
         action_class = self.get_action_class(move_mouse_checked)
-        
-        machine = self.create_machine()
+        machine = self.create_machine(move_mouse_checked) #Передаем аргумент
+
         machine.add_state("1q", FindImageAction('Media/explorehome.png', delay=random.uniform(1, 2)), "1w", "1")
         machine.add_state("1w", action_class('Media/explorehome.png', delay=random.uniform(2, 5)), "1", "restart")
 
@@ -123,7 +137,7 @@ class ActionSets:
 
     def farm_varvar_heal(self, move_mouse_checked):
         action_class = self.get_action_class(move_mouse_checked)
-        machine = self.create_machine()
+        machine = self.create_machine(move_mouse_checked) #Передаем аргумент
 
         machine.add_state("1q", FindImageAction('Media/explorehome.png', delay=random.uniform(1, 2)), "1", "1w")
         machine.add_state("1w", FindImageAction('Media/explorehome2.png', delay=random.uniform(1, 2)), "1e", "restart")
@@ -133,8 +147,8 @@ class ActionSets:
 
         machine.add_state("1", action_class('Media/ficon.png', delay=random.uniform(2, 5)), "2", "restart")
         machine.add_state("2", action_class('Media/barbland.png', delay=random.uniform(2, 5)), "3", "restart")
-        machine.add_state("3", action_class('Media/searchaction.png', delay=random.uniform(2, 5)), "4", "restart")
-        machine.add_state("4", action_class('Media/arrow.png', delay=1.5, offset_y=105), "5", "restart")
+        machine.add_state("3", action_class('Media/searchaction.png', delay=random.uniform(1, 3)), "4", "restart")
+        machine.add_state("4", action_class('Media/arrow.png', offset_y=105), "5", "restart")
         machine.add_state("5", action_class('Media/attackaction.png', delay=random.uniform(2, 5)), "6", "restart")
         machine.add_state("6", action_class('Media/newtroopaction.png', delay=random.uniform(2, 5)), "7", "restart")
         machine.add_state("7", action_class('Media/marchaction.png', delay=random.uniform(2, 5)), "alliancehelp", "restart")
@@ -158,20 +172,21 @@ class ActionSets:
     
     def help_ally (self, move_mouse_checked):
         action_class = self.get_action_class(move_mouse_checked)
-        machine = self.create_machine()
+        machine = self.create_machine(move_mouse_checked) #Передаем аргумент
+
         machine.add_state("alliancehelp", FindImageAction('Media/alliancehelp.png'), "alliancehelp2", "explorehome")
         machine.add_state("alliancehelp2", action_class('Media/alliancehelp.png', delay=random.uniform(2, 5)), "explorehome", "explorehome")
         machine.add_state("explorehome", FindImageAction('Media/explorehome.png'), "explorehome2", "corn")
         machine.add_state("explorehome2", action_class('Media/explorehome.png', delay=random.uniform(2, 5)), "corn", "corn")
 
         machine.add_state("corn", FindImageAction('Media/corn.png'), "corn2", "wood")
-        machine.add_state("corn2", action_class('Media/corn.png', delay=random.uniform(2, 5)), "wood", "wood")
+        machine.add_state("corn2", action_class('Media/corn.png', delay=random.uniform(1, 2)), "wood", "wood")
         machine.add_state("wood", FindImageAction('Media/wood.png'), "wood2", "gold")
-        machine.add_state("wood2", action_class('Media/wood.png', delay=random.uniform(2, 5)), "gold", "gold")
+        machine.add_state("wood2", action_class('Media/wood.png', delay=random.uniform(1, 2)), "gold", "gold")
         machine.add_state("gold", FindImageAction('Media/gold.png'), "gold2", "stone")
-        machine.add_state("gold2", action_class('Media/gold.png', delay=random.uniform(2, 5)), "stone", "stone")
+        machine.add_state("gold2", action_class('Media/gold.png', delay=random.uniform(1, 2)), "stone", "stone")
         machine.add_state("stone", FindImageAction('Media/stone.png'), "stone2", "curetroops")
-        machine.add_state("stone2", action_class('Media/stone.png', delay=random.uniform(2, 5)), "curetroops", "curetroops")
+        machine.add_state("stone2", action_class('Media/stone.png', delay=random.uniform(1, 2)), "curetroops", "curetroops")
         
         machine.add_state("curetroops", FindImageAction('Media/curetroops.png'), "curetroops2", "pickuptroopscured1")
         machine.add_state("curetroops2", action_class('Media/curetroops.png', delay=random.uniform(2, 5)), "healaction", "restart")
@@ -196,7 +211,8 @@ class ActionSets:
         
     def _scout_explore(self, move_mouse_checked):
         action_class = self.get_action_class(move_mouse_checked)
-        machine = self.create_machine()
+        machine = self.create_machine(move_mouse_checked) #Передаем аргумент
+
         machine.add_state("explorenight", action_class('Media/explorenight.png',delay=.4, offset_y=60), "openmsgs", "exploreday")
         
         machine.add_state("exploreday", action_class('Media/explore.png', delay=1, offset_y=60), "openmsgs", "explorenight")
@@ -254,7 +270,7 @@ class ActionSets:
         
     def _farm_varvars (self, move_mouse_checked):
         action_class = self.get_action_class(move_mouse_checked)
-        machine = self.create_machine()
+        machine = self.create_machine(move_mouse_checked) #Передаем аргумент
         machine.add_state("1q", FindImageAction('Media/explorehome.png', random.uniform(1, 2)), "1","1w")
         machine.add_state("1w", FindImageAction('Media/explorehome2.png', random.uniform(1, 2)), "1e","restart")
         machine.add_state("1e", action_class('Media/explorehome2.png', random.uniform(2, 5)), "1", "restart")
@@ -280,7 +296,7 @@ class ActionSets:
         
     def _farm_barb_all (self, move_mouse_checked):
         action_class = self.get_action_class(move_mouse_checked)
-        machine = self.create_machine()
+        machine = self.create_machine(move_mouse_checked) #Передаем аргумент
         machine.add_state("restart", PressKeyAction('escape'), "cityview")
         machine.add_state("cityview", PressKeyAction('space',delay=.3), "birdview","cityview")
         machine.add_state("birdview", PressKeyAction('f',delay=.3), "barbland","cityview")
@@ -305,7 +321,8 @@ class ActionSets:
     
     def _train_troops (self, move_mouse_checked):
         action_class = self.get_action_class(move_mouse_checked)
-        machine = self.create_machine()
+        machine = self.create_machine(move_mouse_checked) #Передаем аргумент
+
         machine.add_state("restart", PressKeyAction('escape'), "stable")
         machine.add_state("stable", action_class('Media/stable.png', offset_x=10), "speedupicon","restart")
         machine.add_state("speedupicon", action_class('Media/speedupicon.png'), "use","trainhorse")
@@ -324,7 +341,7 @@ class ActionSets:
     
     def _farm_rss (self, move_mouse_checked):
         action_class = self.get_action_class(move_mouse_checked)
-        machine = self.create_machine()
+        machine = self.create_machine(move_mouse_checked) #Передаем аргумент
         
         machine.add_state("pause", PressKeyAction('escape', retard=65), "restart")
         machine.add_state("restart", PressKeyAction('escape'), "checkesc")
@@ -351,7 +368,7 @@ class ActionSets:
     
     def _farm_rss_new (self, move_mouse_checked):
         action_class = self.get_action_class(move_mouse_checked)
-        machine = self.create_machine()
+        machine = self.create_machine(move_mouse_checked) #Передаем аргумент
         machine.add_state("pause1",  ManualSleepAction(delay=10), "test")
         machine.add_state("test",  ScreenshotAction(96,98,18.6,20.4,delay=1), "test2")
         machine.add_state("test2", ExtractTextAction(description= "marchcount"), "birdview","pause1")
@@ -380,7 +397,7 @@ class ActionSets:
     
     def _farm_gems (self, move_mouse_checked):
         action_class = self.get_action_class(move_mouse_checked)
-        machine = self.create_machine()
+        machine = self.create_machine(move_mouse_checked) #Передаем аргумент
         #machine.add_state("0", PressKeyAction('space',retard=4), "1")
         #machine.add_state("1", PressKeyAction('space'), "2")
         machine.add_state("2",FindGemAction(),"3")
@@ -390,7 +407,8 @@ class ActionSets:
     
     def _loharjr (self, move_mouse_checked):
         action_class = self.get_action_class(move_mouse_checked)
-        machine = self.create_machine()
+        machine = self.create_machine(move_mouse_checked) #Передаем аргумент
+
         machine.add_state("0", PressKeyAction('space',retard=4), "1")
         machine.add_state("1", PressKeyAction('space'), "2")
         machine.add_state("2",FindMarauderAction(),"3")
@@ -423,7 +441,7 @@ class ActionSets:
 
     def _loharjrt (self, move_mouse_checked):
         action_class = self.get_action_class(move_mouse_checked)
-        machine = self.create_machine()
+        machine = self.create_machine(move_mouse_checked) #Передаем аргумент
         
         machine.add_state("inventory", PressKeyAction('i'), "other")
         machine.add_state("other", ManualClickAction(x=80, y=20), "loharjr","inventory")
