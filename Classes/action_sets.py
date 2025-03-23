@@ -1,5 +1,5 @@
-from Actions.find_and_click_image_action import action_class
-from Actions.find_and_click_image_action import action_classMouse
+from Actions.find_and_click_image_action import FindAndClickImageAction
+from Actions.find_and_click_image_action import FindAndClickImageActionMouse
 from Actions.press_key_action import PressKeyAction
 from Actions.find_image_action import FindImageAction
 from Actions.manual_click_action import ManualClickAction
