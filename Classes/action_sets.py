@@ -34,6 +34,7 @@ class ActionSets:
             return FindAndClickImageActionMouse
         else:
             return FindAndClickImageAction
+        
     def TEST(self, move_mouse_checked):
         """Метод TEST теперь принимает move_mouse_checked."""
         action_class = self.get_action_class(move_mouse_checked)
