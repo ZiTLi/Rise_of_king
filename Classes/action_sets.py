@@ -36,12 +36,11 @@ class ActionSets:
             return FindAndClickImageAction
         
     def TEST(self, move_mouse_checked):
-        """Метод TEST теперь принимает move_mouse_checked."""
         action_class = self.get_action_class(move_mouse_checked)
-
         machine = self.create_machine(move_mouse_checked) #Передаем аргумент
-        machine.add_state("1", action_class('Media/escxdark.png', delay=random.uniform(1, 2)), "2", "2")
-        machine.add_state("2", action_class('Media/escxwhite.png', delay=random.uniform(1, 2)), "1", "1")
+        machine.add_state("1", action_class('Media/healaction.png', delay=5), "1", "1") # Задержка перед поиском 1 секунда.
+        machine.add_state("14", action_class('Media/escxdark.png', delay=5), "2", "2") # Задержка перед поиском 1 секунда.
+        machine.add_state("2", action_class('Media/escxwhite.png', delay=5), "1", "1") # Без задержки перед поиском.        machine.set_initial_state("1")
         machine.set_initial_state("1")
         return machine
     
@@ -149,7 +148,8 @@ class ActionSets:
         machine.add_state("1", action_class('Media/ficon.png', delay=random.uniform(2, 5)), "2", "restart")
         machine.add_state("2", action_class('Media/barbland.png', delay=random.uniform(2, 5)), "3", "restart")
         machine.add_state("3", action_class('Media/searchaction.png', delay=random.uniform(1, 3)), "4", "restart")
-        machine.add_state("4", action_class('Media/arrow.png', offset_y=105), "5", "restart")
+        machine.add_state("4", action_class('Media/arrow.png', delay=1.5, offset_y=105), "5", "51")
+        machine.add_state("51", action_class('Media/arrow.png', delay=1.5, offset_y=105), "5", "restart")
         machine.add_state("5", action_class('Media/attackaction.png', delay=random.uniform(2, 5)), "6", "restart")
         machine.add_state("6", action_class('Media/newtroopaction.png', delay=random.uniform(2, 5)), "7", "restart")
         machine.add_state("7", action_class('Media/marchaction.png', delay=random.uniform(2, 5)), "alliancehelp", "restart")
