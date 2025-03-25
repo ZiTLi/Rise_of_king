@@ -4,10 +4,11 @@ import time
 import numpy as np
 from pynput.mouse import Controller, Button
 from termcolor import colored
-
+import cv2
 from Actions.action import Action
 from image_finder import ImageFinder
 from window_handler import WindowHandler
+
 
 mouse = Controller()
 
@@ -38,7 +39,7 @@ def binomial_coefficient(n, k):
         res = res * (n - i) // (i + 1)
     return res
 
-def move_mouse_pynput(start_x, start_y, end_x, end_y, duration=5):
+def move_mouse_pynput(start_x, start_y, end_x, end_y, duration):
     """Перемещает мышь с помощью pynput."""
     control_points = [
         (start_x, start_y),
@@ -46,7 +47,7 @@ def move_mouse_pynput(start_x, start_y, end_x, end_y, duration=5):
         (end_x + random.randint(-100, 100), end_y + random.randint(-50, 50)),
         (end_x, end_y),
     ]
-    curve_points = bezier_curve(control_points, num_points=50)
+    curve_points = bezier_curve(control_points, num_points=100)
     start_time = time.time()
     for point in curve_points:
         current_time = time.time() - start_time
@@ -79,11 +80,13 @@ class FindAndClickImageActionMouse(Action):
                 rects = np.array([(pt[0], pt[1], pt[0] + target_image.shape[1] * best_scale[0], pt[1] + target_image.shape[0] * best_scale[1]) for pt in best_loc])
                 pick = ImageFinder.non_max_suppression_fast(rects, 0.3)
                 for (startX, startY, endX, endY) in pick:
+                    cv2.rectangle(screenshot_cv, (int(startX), int(startY)), (int(endX), int(endY)), (255,0,255), 2)
                     center_x = int(startX + (endX - startX) // 2 + win.left)
                     center_y = int(startY + (endY - startY) // 2 + win.top)
                     start_x, start_y = pyautogui.position()
                     if self.move_mouse:
-                        end_x, end_y = move_mouse_pynput(start_x, start_y, center_x + self.offset_x, center_y + self.offset_y, duration=self.delay) # Используем self.delay
+                        end_x, end_y = move_mouse_pynput(start_x, start_y, center_x + self.offset_x, center_y + self.offset_y, duration=self.delay) 
+                        #end_x, end_y = move_mouse_pynput(start_x, start_y, center_x + self.offset_x, center_y + self.offset_y, duration=self.delay) # Используем self.delay
                     else:
                         pyautogui.moveTo(center_x + self.offset_x, center_y + self.offset_y)
                         end_x, end_y = center_x + self.offset_x, center_y + self.offset_y
@@ -91,8 +94,11 @@ class FindAndClickImageActionMouse(Action):
                     offset_click_x = random.randint(-5, 5)
                     offset_click_y = random.randint(-5, 5)
                     mouse.click(Button.left)
-                    #time.sleep(self.delay)
-                    print(colored(f"Image {self.image} clicked successfully.", "green"))
+                    print(colored(f"found {self.image} {len(pick)}x at {best_max_val}%", "green"))
+                    if len(pick) >= self.max_matches and self.max_matches != 0:
+                        return False
+                    if len(pick) < self.max_matches and self.max_matches != 0:
+                        return True
                     return True
             else:
                 print(colored(f"Image {self.image} not found.", "red"))
