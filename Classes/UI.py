@@ -11,6 +11,7 @@ import inspect
 from Actions.find_and_click_image_action import FindAndClickImageActionMouse
 import time
 import threading
+from pynput import keyboard
 
 
 class UI(QtWidgets.QWidget):
@@ -20,6 +21,7 @@ class UI(QtWidgets.QWidget):
         button_layout = QtWidgets.QHBoxLayout()
         button_layout.setAlignment(QtCore.Qt.AlignLeft)
         self.OS_ROKBOT = OSROKBOT(window_title, delay)
+        self.start_global_key_listener()
         self.action_sets = ActionSets(OS_ROKBOT=self.OS_ROKBOT)
         self.target_title = window_title
         self.timer = QtCore.QTimer(self)
@@ -278,6 +280,20 @@ class UI(QtWidgets.QWidget):
         self.reload_button.clicked.connect(self.reload_bot)
         button_layout.addWidget(self.reload_button)
 
+    def start_global_key_listener(self):
+        """Запускает глобальный слушатель клавиш."""
+        def on_press(key):
+            try:
+                # Проверяем, нажата ли клавиша F1
+                if key == keyboard.Key.f1:
+                    self.stop_automation()  # Вызываем функцию reload_bot
+            except Exception as e:
+                print(f"Error in global key listener: {e}")
+
+        # Создаем и запускаем слушатель клавиш
+        self.listener = keyboard.Listener(on_press=on_press)
+        self.listener.start()
+
     def reload_bot(self):
         """
         Перезагружает приложение бота.
@@ -364,6 +380,7 @@ class UI(QtWidgets.QWidget):
 
     def closeEvent(self, event):
         self.stop_automation()
+        self.listener.stop()
         event.accept()
         
 if __name__ == "__main__":
