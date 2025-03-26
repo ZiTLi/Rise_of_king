@@ -38,7 +38,7 @@ class ActionSets:
     def TEST(self, move_mouse_checked):
         action_class = self.get_action_class(move_mouse_checked)
         machine = self.create_machine(move_mouse_checked) #Передаем аргумент
-        machine.add_state("1", action_class('Media/healaction.png', delay=5), "1", "1") # Задержка перед поиском 1 секунда.
+        machine.add_state("1", action_class('Media/sendaction2.png', delay=5), "1", "1") # Задержка перед поиском 1 секунда.
         machine.add_state("14", action_class('Media/escxdark.png', delay=5), "2", "2") # Задержка перед поиском 1 секунда.
         machine.add_state("2", action_class('Media/escxwhite.png', delay=5), "1", "1") # Без задержки перед поиском.        machine.set_initial_state("1")
         machine.set_initial_state("1")
